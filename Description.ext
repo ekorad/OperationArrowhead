@@ -1,0 +1,17 @@
+allowFunctionsLog = 1;
+
+class CfgFunctions
+{
+	class Util
+	{
+		class Task
+		{
+			class onIntelHoldComplete {};
+		};
+
+		class Test
+		{
+			class test {};
+		}
+	};
+};
