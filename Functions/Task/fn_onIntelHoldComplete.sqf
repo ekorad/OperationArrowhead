@@ -17,58 +17,67 @@
 */
 
 /*******************************************************************************
+ *                                   DEFINES                                   *
+ *******************************************************************************/
+
+#define DESCRIPTION_MARKER_INDEX 	2
+#define GLOBAL_TASK_VAR_NAME_SUFFIX	"_successfulTask"
+
+/*******************************************************************************
  *                               ARGUMENT CHECKS                               *
  *******************************************************************************/
 
-private _currentSubTaskName = param[0, nil, [""]];
+private _currentTask = param[0, nil, [""]];
 
-if (isNil "_currentSubTaskName") exitWith {
+if (isNil "_currentTask") exitWith {
 	["invalid argument: task name is nil"] call BIS_fnc_error;
 };
-
-if (!([_currentSubTaskName] call BIS_fnc_taskExists)) exitWith {
-	["invalid argument: no task with name '%1'", _currentSubTaskName] call BIS_fnc_error;
+if (_currentTask isEqualTo "") exitWith {
+	["invalid argument: task name is empty"] call BIS_fnc_error;
+};
+if (!([_currentTask] call BIS_fnc_taskExists)) exitWith {
+	["invalid argument: no task with name '%1'", _currentTask]
+		call BIS_fnc_error;
 };
 
-private _parentTaskName = _currentSubTaskName call BIS_fnc_taskParent;
-if (isNil "_parentTaskName") exitWith {
-	["invalid argument: task '%1' has no parent task"] call BIS_fnc_error;
+private _parentTask = _currentTask call BIS_fnc_taskParent;
+if (isNil "_parentTask") exitWith {
+	["invalid argument: task with name '%1' has no parent task"]
+		call BIS_fnc_error;
 };
 
 /*******************************************************************************
  *                                FUNCTION LOGIC                               *
  *******************************************************************************/
 
-private _subTasks = [_parentTaskName] call BIS_fnc_taskChildren;
-private _incompleteSubTasks = _subTasks select { !([_x] call BIS_fnc_taskCompleted) };
-private _isLastSubTask = (count _incompleteSubTasks) == 1;
-
-// if only one incomplete task left, force success; otherwise, roll dice
-private _taskSuccessful = if (_isLastSubTask) then { 
-	true
-} else {
-	([1, 1] call BIS_fnc_randomInt) == 1
+private _globalTaskVarName = _parentTask + GLOBAL_TASK_VAR_NAME_SUFFIX;
+private _subTasks = _parentTask call BIS_fnc_taskChildren;
+// "static" variable
+private _successfulTask = missionNamespace getVariable [_globalTaskVarName,
+	nil];
+if (isNil "_successfulTask") then {
+	_successfulTask = (_subTasks select (_subTasks call BIS_fnc_randomIndex));
+	missionNamespace setVariable [_globalTaskVarName, _successfulTask, true];
 };
 
-if (_taskSuccessful) then {
-	// remove remaining subtask markers
+if (_currentTask isEqualTo _successfulTask) then {
 	{
-		private _subTaskMarkerName = ((_x call BIS_fnc_taskDescription) select 2) select 0;
-		deleteMarker _subTaskMarkerName;
-	} forEach _incompleteSubTasks;
-
-	[_parentTaskName, "SUCCEEDED"] call BIS_fnc_taskSetState;
+		if (!(_x call BIS_fnc_taskCompleted)) then {
+			private _subTaskMarker = ((_x call BIS_fnc_taskDescription)
+				select DESCRIPTION_MARKER_INDEX) select 0;
+			deleteMarker _subTaskMarker;
+		};
+	} forEach _subTasks;
+	[_parentTask, "SUCCEEDED"] call BIS_fnc_taskSetState;
 } else {
-	[_currentSubTaskName, "FAILED"] call BIS_fnc_taskSetState;
+	private _subTaskMarker = ((_currentTask call BIS_fnc_taskDescription)
+		select DESCRIPTION_MARKER_INDEX) select 0;
+	deleteMarker _subTaskMarker;
+	[_currentTask, "FAILED"] call BIS_fnc_taskSetState;
 
-	// delete associated subtask marker
-	private _subTaskMarkerName = ((_currentSubTaskName call BIS_fnc_taskDescription) select 2) select 0;
-	deleteMarker _subTaskMarkerName;
-
-	// refresh incomplete subtask array after setting subtask state
-	_incompleteSubTasks = _subTasks select { !([_x] call BIS_fnc_taskCompleted) };
-
-	// assign next random incomplete task
-	private _nextSubtaskIndex = [_incompleteSubTasks] call BIS_fnc_randomIndex;
-	[_incompleteSubTasks select _nextSubtaskIndex, "ASSIGNED", true] call BIS_fnc_taskSetState;
+	private _incompleteSubTasks = _subTasks
+		select { !([_x] call BIS_fnc_taskCompleted) };
+	private _nextTask = _incompleteSubTasks
+		select (_incompleteSubTasks call BIS_fnc_randomIndex);
+	[_nextTask, "ASSIGNED"] call BIS_fnc_taskSetState;
 };
