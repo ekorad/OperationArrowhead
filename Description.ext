@@ -2,7 +2,7 @@ allowFunctionsLog = 1;
 
 class CfgFunctions
 {
-	class Util
+	class UTIL
 	{
 		class Task
 		{

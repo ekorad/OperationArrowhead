@@ -10,7 +10,7 @@
 	accordingly.
 
 	Parameter(s):
-	_this select 0: STRING - Current task name
+	_this select 0: STRING - current task name
 
 	Returns:
 	NOTHING
@@ -24,7 +24,7 @@
 #define GLOBAL_TASK_VAR_NAME_SUFFIX	"_successfulTask"
 
 /*******************************************************************************
- *                               ARGUMENT CHECKS                               *
+ *                                  ARGUMENTS                                  *
  *******************************************************************************/
 
 private _currentTask = param[0, nil, [""]];
