@@ -6,12 +6,14 @@
 	features such as AI behaviour or player invulnerability.
 */
 
-MENU_DEBUG = [
-	["Debug", false],
+#include ".\..\Headers\commMenu.hpp"
 
-	["Test", [2], "", -5,
-		[["expression", "hint 'Hello, world!';"]], "1", "1"]
+UTIL_DEBUG_MENU = [
+	MENU_TITLE("Debug"),
+
+	MENU_ITEM_BUTTON("Disable AI combat", hint 'Disabled AI combat'),
+	MENU_ITEM_BUTTON("Enable God mode", hint 'Enabled God mode')
 ];
-publicVariable "MENU_DEBUG";
+publicVariable "UTIL_DEBUG_MENU";
 
 [player, "Debug"] call BIS_fnc_addCommMenuItem;

@@ -16,7 +16,7 @@ class CfgCommunicationMenu
 	class Debug
 	{
 		text = "Debug";
-		submenu = "#USER:MENU_DEBUG";
+		submenu = "#USER:UTIL_DEBUG_MENU";
 		expression = "";
 		icon = "";
 		cursor = "";
