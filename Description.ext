@@ -10,3 +10,17 @@ class CfgFunctions
 		};
 	};
 };
+
+class CfgCommunicationMenu
+{
+	class Debug
+	{
+		text = "Debug";
+		submenu = "#USER:MENU_DEBUG";
+		expression = "";
+		icon = "";
+		cursor = "";
+		enable = "1";
+		removeAfterExpressionCall = 0;
+	};
+};
